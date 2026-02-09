@@ -6,11 +6,13 @@ import {
   User,
   Vote,
   Settings,
+  Draft,
 } from '@/components/icons';
 import { config } from '@/config';
 import { route } from '@/route';
 import { SpaceType } from '../types/space-type';
 import { Space } from '../types/space';
+import { UserType } from '@/lib/api/ratel/users.v3';
 
 export type SideMenu = {
   Icon: React.ComponentType<React.ComponentProps<'svg'>>;
@@ -31,12 +33,12 @@ export enum Label {
   Boards = 'menu_boards',
   Members = 'menu_members',
   Files = 'menu_files',
-  IncentiveSetting = 'menu_incentive_setting',
-  Incentive = 'menu_incentive',
+  Dao = 'menu_dao',
   Quiz = 'menu_quiz',
   AdminSettings = 'menu_admin_settings',
   Rewards = 'menu_rewards',
   Analyze = 'menu_analyze',
+  Report = 'menu_report',
   Requirements = 'menu_requirements',
 }
 
@@ -103,6 +105,10 @@ export const SPACE_MENUS: Record<SpaceType, SideMenu[]> = {
       Icon: Post,
       to: (space) => route.spaceFiles(space.pk),
       label: Label.Files,
+      tag: {
+        label: 'Post',
+        visible: (space) => !space.participated,
+      },
     },
     {
       Icon: Vote,
@@ -117,25 +123,15 @@ export const SPACE_MENUS: Record<SpaceType, SideMenu[]> = {
       Icon: Post,
       to: (space) => route.spaceBoards(space.pk),
       label: Label.Boards,
-      tag: {
-        label: 'Post',
-        visible: (space) => !space.participated,
-      },
     },
     {
       Icon: Discuss,
-      to: (space) => route.spaceIncentiveSetting(space.pk),
-      visible: (space) => config.experiment && space.isAdmin(),
-      label: Label.IncentiveSetting,
-    },
-    {
-      Icon: Discuss,
-      to: (space) => route.spaceIncentive(space.pk),
+      to: (space) => route.spaceDao(space.pk),
       visible: (space) =>
         config.experiment &&
-        (space.isAdmin() || Boolean(space.incentiveAddress)) &&
-        space.isFinished,
-      label: Label.Incentive,
+        space.authorType === UserType.Team &&
+        (space.isAdmin() || Boolean(space.daoAddress)),
+      label: Label.Dao,
     },
     {
       Icon: User,
@@ -154,6 +150,15 @@ export const SPACE_MENUS: Record<SpaceType, SideMenu[]> = {
       to: (space) => route.spaceAnalyzePolls(space.pk),
       visible: (space) => !space.isDraft && space.isAdmin(),
       label: Label.Analyze,
+    },
+    {
+      Icon: Draft,
+      to: (space) => route.spaceReport(space.pk),
+      visible: (space) =>
+        !space.isDraft &&
+        space.isFinished &&
+        (space.participated || space.isAdmin()),
+      label: Label.Report,
     },
   ],
 
